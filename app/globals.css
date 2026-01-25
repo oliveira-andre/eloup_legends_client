@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #010a13;
+  --foreground: #f0f0f0;
 }
 
 @theme inline {
@@ -10,6 +10,10 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-lol-dark: #091428;
+  --color-lol-gold: #C8AA6E;
+  --color-lol-blue: #0AC8B9;
+  --color-lol-card: #0A1428;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +26,16 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', Helvetica, sans-serif;
+}
+
+.text-gradient {
+  background: linear-gradient(to right, #0AC8B9, #C8AA6E);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-bg {
+  background-image: linear-gradient(to bottom, rgba(1, 10, 19, 0.7), #010a13), url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2670&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
 }
