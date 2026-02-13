@@ -24,9 +24,9 @@ export default function Header() {
           </nav>
 
           <div>
-            <a href="#" className="flex items-center gap-2 px-6 py-2 rounded-full border border-lol-blue text-lol-blue hover:bg-lol-blue hover:text-black transition font-semibold">
+            <Link href="/login" className="flex items-center gap-2 px-6 py-2 rounded-full border border-lol-blue text-lol-blue hover:bg-lol-blue hover:text-black transition font-semibold">
               <i className="fa-regular fa-user"></i> Login
-            </a>
+            </Link>
           </div>
         </div>
       </div>

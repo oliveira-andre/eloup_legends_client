@@ -1,0 +1,14 @@
+.login-container {
+    background-color: #010a13;
+    color: #f0f0f0;
+}
+
+.login-bg {
+    background-image: url('/login-bg.avif');
+    background-size: cover;
+    background-position: center;
+}
+
+.login-overlay {
+    background: linear-gradient(to right, rgba(1, 10, 19, 0.1), #010a13);
+}

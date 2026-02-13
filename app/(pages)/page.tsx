@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 
-import Header from "./components/header";
-import Footer from "./components/footer";
-import { services } from "./services/services";
-import { Service } from "./entities/Service";
-import plainUnit from "./utils/plainUnit";
-import decimalUnit from "./utils/decimalUnit";
+import Header from "../components/header";
+import Footer from "../components/footer";
+import { services } from "../services/services";
+import { Service } from "../entities/Service";
+import plainUnit from "../utils/plainUnit";
+import decimalUnit from "../utils/decimalUnit";
 
 export default function Home() {
   const [servicesData, setServicesData] = useState<Service[]>([]);

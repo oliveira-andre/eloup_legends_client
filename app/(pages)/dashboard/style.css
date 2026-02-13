@@ -1,0 +1,22 @@
+.dashboard-container {
+    background-color: #010a13;
+    color: #f0f0f0;
+}
+
+/* Scrollbar customizada */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #091428; 
+}
+
+::-webkit-scrollbar-thumb {
+    background: #1e282d; 
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #C8AA6E; 
+}
