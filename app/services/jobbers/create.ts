@@ -12,7 +12,7 @@ interface CreateJobberRequest {
 }
 
 export const createJobber = async ({ name, email, password, rank, position, observation, eloId, file }: CreateJobberRequest) => {
-  await httpClient.post(`/auth/sign-up`, { name, email, password, role: 'jobber' });
+  await httpClient.post(`/auth/sign-up`, { name, email, password, role: 'jober' });
   const { data } = await httpClient.post(`/jobers`, { name, rank, position, observation, eloId, file });
   return data;
 };
