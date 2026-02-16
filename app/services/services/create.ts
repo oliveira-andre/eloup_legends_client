@@ -5,7 +5,7 @@ interface CreateServiceRequest {
   tagline: string;
   price: number;
   position: number;
-  picture: File;
+  picture: string;
   description: string;
 }
 

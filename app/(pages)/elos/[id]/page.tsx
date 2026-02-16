@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
+import { useParams } from 'next/navigation';
 
 import AdminSidebar from '../../../components/admin-sidebar';
 import { elos } from '@/app/services/elos';
 import './style.css';
 
-export default function NewServicePage() {
+export default function ShowServicePage() {
+  const { id } = useParams();
   const [name, setName] = useState('');
   const [hasRank, setHasRank] = useState(false);
   const [position, setPosition] = useState('');
@@ -17,12 +19,24 @@ export default function NewServicePage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      await elos.create({ name, has_rank: hasRank, position: Number(position), picture });
-      toast.success('Elo / Rank cadastrado com sucesso');
+      await elos.update({ id: id as string, name, has_rank: hasRank, position: Number(position), picture });
+      toast.success('Elo / Rank atualizado com sucesso');
       window.location.href = '/elos';
     } catch (error) {
-      toast.error('Erro ao cadastrar Elo / Rank');
+      toast.error('Erro ao atualizar Elo / Rank');
     }
+  }
+
+  useEffect(() => {
+    fetchElo();
+  }, [id]);
+
+  async function fetchElo() {
+    const responseElo = await elos.show(id as string);
+    setName(responseElo?.name ?? '');
+    setHasRank(responseElo?.has_rank ?? false);
+    setPosition(responseElo?.position ?? '');
+    setPicture(responseElo?.picture ?? '');
   }
 
   return (
@@ -97,7 +111,7 @@ export default function NewServicePage() {
                 </div>
 
                 <div className="w-full h-40 bg-black/40 rounded border border-dashed border-gray-700 flex items-center justify-center overflow-hidden relative group">
-                  {/* <img id="preview-img" src="" className="hidden w-full h-full object-cover" /> */}
+                  {/* <img id="preview-img" src={picture} className="hidden w-full h-full object-cover" /> */}
                   <div id="preview-placeholder" className="text-gray-600 flex flex-col items-center">
                     <i className="fa-regular fa-image text-3xl mb-2"></i>
                     <span className="text-xs italic">Preview da Imagem</span>

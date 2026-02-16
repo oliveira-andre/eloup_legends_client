@@ -2,44 +2,46 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
+import { redirect, useParams } from 'next/navigation';
 
 import AdminSidebar from '../../../components/admin-sidebar';
-import { elos } from '@/app/services/elos';
-import { Elo } from '@/app/entities/Elo';
-import { jobbers } from '@/app/services/jobbers';
-import { toast } from 'react-hot-toast';
+import { services } from '@/app/services/services';
 import './style.css';
 
-export default function NewServicePage() {
-  const [elosData, setElosData] = useState<Elo[]>([]);
+export default function ShowServicePage() {
+  const { id } = useParams();
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [eloId, setEloId] = useState('');
-  const [rank, setRank] = useState('');
+  const [tagline, setTagline] = useState('');
+  const [price, setPrice] = useState('');
   const [position, setPosition] = useState('');
   const [picture, setPicture] = useState('');
-  const [observation, setObservation] = useState('');
+  const [description, setDescription] = useState('');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
-      await jobbers.create({ name, email, password, rank: Number(rank), position: Number(position), observation, eloId, file: picture });
-      toast.success('Jobber / Booster cadastrado com sucesso');
-      window.location.href = '/jobbers';
+      await services.update({ id: id as string, name, tagline, price: Number(price), position: Number(position), picture, description });
+      toast.success('Serviço atualizado com sucesso');
+      window.location.href = '/services';
     } catch (error) {
-      toast.error('Erro ao cadastrar Jobber / Booster');
+      toast.error('Erro ao atualizar Serviço');
     }
   }
 
   useEffect(() => {
-    fetchElos();
-  }, []);
+    fetchService();
+  }, [id]);
 
-  async function fetchElos() {
-    const responseElos = await elos.getAll();
-    setElosData(responseElos ?? []);
+  async function fetchService() {
+    const responseService = await services.show(id as string);
+    setName(responseService?.name ?? '');
+    setTagline(responseService?.tagline ?? '');
+    setPrice(responseService?.price ?? '');
+    setPosition(responseService?.position ?? '');
+    // setPicture(responseService?.picture ?? '');
+    setDescription(responseService?.description ?? '');
   }
 
   return (
@@ -48,7 +50,7 @@ export default function NewServicePage() {
 
       <main className="flex-1 flex flex-col overflow-y-auto">
         <header className="h-20 bg-[#091428]/50 flex items-center px-8 border-b border-white/5">
-          <h1 className="text-xl font-bold text-white">Cadastrar Novo Jobber / Booster</h1>
+          <h1 className="text-xl font-bold text-white">Cadastrar Novo Serviço</h1>
         </header>
 
         <div className="p-8 max-w-4xl mx-auto w-full">
@@ -58,33 +60,7 @@ export default function NewServicePage() {
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-lol-gold mb-2">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    placeholder="Ex: elo@boost.com"
-                    className="w-full px-4 py-3 rounded transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-lol-gold mb-2">Senha</label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    placeholder="Ex: **********"
-                    className="w-full px-4 py-3 rounded transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-lol-gold mb-2">Nome do Jobber / Booster</label>
+                  <label className="block text-sm font-medium text-lol-gold mb-2">Nome do Serviço</label>
                   <input
                     type="text"
                     name="name"
@@ -97,32 +73,33 @@ export default function NewServicePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-lol-gold mb-2">Elo / Rank</label>
-                  <select
-                    name="eloId"
-                    value={eloId}
-                    onChange={(e) => setEloId(e.target.value)}
+                  <label className="block text-sm font-medium text-lol-gold mb-2">Tagline (Slogan curto)</label>
+                  <input
+                    type="text"
+                    name="tagline"
+                    value={tagline}
+                    onChange={(e) => setTagline(e.target.value)}
                     required
+                    placeholder="Ex: Entrega em 24h"
                     className="w-full px-4 py-3 rounded transition"
-                  >
-                    <option value="">Selecione o Elo / Rank</option>
-                    {elosData.map((elo) => (
-                      <option key={elo.id} value={elo.id}>{elo.name}</option>
-                    ))}
-                  </select>
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-lol-gold mb-2">Rank</label>
-                    <input
-                      type="number"
-                      name="rank"
-                      value={rank}
-                      onChange={(e) => setRank(e.target.value)}
-                      placeholder="50"
-                      className="w-full px-4 py-3 rounded transition"
-                    />
+                    <label className="block text-sm font-medium text-lol-gold mb-2">Preço</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-3 text-gray-500 text-sm">R$</span>
+                      <input
+                        type="number"
+                        name="price"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        required
+                        placeholder="50"
+                        className="w-full pl-10 pr-4 py-3 rounded transition"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-lol-gold mb-2">Posição (Ordem)</label>
@@ -141,7 +118,7 @@ export default function NewServicePage() {
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-lol-gold mb-2">Foto de Perfil</label>
+                  <label className="block text-sm font-medium text-lol-gold mb-2">Imagem (Splash Art)</label>
                   <input
                     type="file"
                     id="picture-url"
@@ -162,12 +139,12 @@ export default function NewServicePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-lol-gold mb-2">Observação</label>
-                  <textarea name="observation" rows={4}
-                    value={observation}
-                    onChange={(e) => setObservation(e.target.value)}
+                  <label className="block text-sm font-medium text-lol-gold mb-2">Descrição Detalhada</label>
+                  <textarea name="description" rows={4}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                     required
-                    placeholder="Explique como o jobber / booster funciona..."
+                    placeholder="Explique como o serviço funciona..."
                     className="w-full px-4 py-3 rounded transition resize-none"
                   />
                 </div>
@@ -182,11 +159,11 @@ export default function NewServicePage() {
               </p>
 
               <div className="flex gap-4 w-full md:w-auto">
-                <Link href="/jobbers" className="flex-1 md:flex-none px-8 py-3 rounded font-bold text-gray-400 hover:text-white transition cursor-pointer">
+                <Link href="/services" className="flex-1 md:flex-none px-8 py-3 rounded font-bold text-gray-400 hover:text-white transition cursor-pointer">
                   Cancelar
                 </Link>
                 <button type="submit" className="flex-1 md:flex-none px-12 py-3 bg-gradient-to-r from-lol-gold to-yellow-600 text-black font-black rounded shadow-[0_0_20px_rgba(200,170,110,0.3)] hover:scale-105 transition transform cursor-pointer">
-                  SALVAR JOBBER / BOOSTER
+                  SALVAR SERVIÇO
                 </button>
               </div>
             </div>

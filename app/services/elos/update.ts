@@ -9,6 +9,6 @@ interface UpdateEloRequest {
 }
 
 export const updateElo = async ({ id, name, has_rank, position, picture }: UpdateEloRequest) => {
-  const { data } = await httpClient.put(`/elos/${id}`, { name, has_rank, position, picture });
+  const { data } = await httpClient.patch(`/elos/${id}`, { name, has_rank, position, picture });
   return data;
 };

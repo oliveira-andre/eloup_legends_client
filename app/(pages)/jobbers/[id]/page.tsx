@@ -2,19 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 
 import AdminSidebar from '../../../components/admin-sidebar';
 import { elos } from '@/app/services/elos';
 import { Elo } from '@/app/entities/Elo';
 import { jobbers } from '@/app/services/jobbers';
-import { toast } from 'react-hot-toast';
 import './style.css';
 
-export default function NewServicePage() {
+export default function ShowJobberPage() {
+  const { id } = useParams();
   const [elosData, setElosData] = useState<Elo[]>([]);
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [eloId, setEloId] = useState('');
   const [rank, setRank] = useState('');
   const [position, setPosition] = useState('');
@@ -23,25 +23,34 @@ export default function NewServicePage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     try {
-      await jobbers.create({ name, email, password, rank: Number(rank), position: Number(position), observation, eloId, file: picture });
-      toast.success('Jobber / Booster cadastrado com sucesso');
+      await jobbers.update({ id: id as string, name, rank: Number(rank), position: Number(position), observation, eloId, file: picture });
+      toast.success('Jobber / Booster atualizado com sucesso');
       window.location.href = '/jobbers';
     } catch (error) {
-      toast.error('Erro ao cadastrar Jobber / Booster');
+      toast.error('Erro ao atualizar Jobber / Booster');
     }
   }
 
   useEffect(() => {
     fetchElos();
-  }, []);
+    fetchJobber();
+  }, [id]);
 
   async function fetchElos() {
     const responseElos = await elos.getAll();
     setElosData(responseElos ?? []);
   }
 
+  async function fetchJobber() {
+    const responseJobber = await jobbers.show(id as string);
+    setName(responseJobber?.name ?? '');
+    setEloId(responseJobber?.eloId ?? '');
+    setRank(responseJobber?.rank ?? '');
+    setPosition(responseJobber?.position ?? '');
+    // setPicture(responseJobber?.picture ?? '');
+    setObservation(responseJobber?.observation ?? '');
+  }
   return (
     <div className="flex h-screen overflow-hidden new-service-container">
       <AdminSidebar />
@@ -57,32 +66,6 @@ export default function NewServicePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
               <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-lol-gold mb-2">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    placeholder="Ex: elo@boost.com"
-                    className="w-full px-4 py-3 rounded transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-lol-gold mb-2">Senha</label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    placeholder="Ex: **********"
-                    className="w-full px-4 py-3 rounded transition"
-                  />
-                </div>
-
                 <div>
                   <label className="block text-sm font-medium text-lol-gold mb-2">Nome do Jobber / Booster</label>
                   <input
@@ -120,6 +103,7 @@ export default function NewServicePage() {
                       name="rank"
                       value={rank}
                       onChange={(e) => setRank(e.target.value)}
+                      required
                       placeholder="50"
                       className="w-full px-4 py-3 rounded transition"
                     />
@@ -163,7 +147,9 @@ export default function NewServicePage() {
 
                 <div>
                   <label className="block text-sm font-medium text-lol-gold mb-2">Observação</label>
-                  <textarea name="observation" rows={4}
+                  <textarea
+                    name="observation"
+                    rows={4}
                     value={observation}
                     onChange={(e) => setObservation(e.target.value)}
                     required

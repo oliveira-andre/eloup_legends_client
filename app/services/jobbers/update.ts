@@ -7,10 +7,10 @@ interface UpdateJobberRequest {
   position: number;
   observation: string;
   eloId: string;
-  file: File;
+  file: string;
 }
 
 export const updateJobber = async ({ id, name, rank, position, observation, eloId, file }: UpdateJobberRequest) => {
-  const { data } = await httpClient.put(`/jobers/${id}`, { name, rank, position, observation, eloId, file });
+  const { data } = await httpClient.patch(`/jobers/${id}`, { name, rank, position, observation, eloId, file });
   return data;
 };

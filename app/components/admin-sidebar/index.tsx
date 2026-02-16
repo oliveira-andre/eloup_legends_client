@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { toast } from 'react-hot-toast';
 import { redirect, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { users } from '@/app/services/users';
@@ -23,6 +24,12 @@ export default function AdminSidebar() {
     } catch (error) {
       redirect('/login');
     }
+  }
+
+  function logout() {
+    localStorage.removeItem('token');
+    toast.success('Logout realizado com sucesso');
+    redirect('/login');
   }
 
   return (
@@ -75,10 +82,14 @@ export default function AdminSidebar() {
       <div className="p-4 border-t border-white/5">
         <div className="flex items-center gap-3">
           <Image src="/no-image.png" alt="Admin" width={40} height={40} className="w-10 h-10 rounded-full border border-lol-gold" />
-            <div>
-              <p className="text-sm font-bold text-white">{name}</p>
-              <p className="text-xs text-green-400">Online</p>
-            </div>
+          <div>
+            <p className="text-sm font-bold text-white">{name}</p>
+            <p className="text-xs text-green-400">Online</p>
+          </div>
+
+          <button onClick={() => logout()} className="text-xs text-red-400 hover:text-red-500 transition">
+            <i className="fa-solid fa-right-from-bracket"></i>
+          </button>
         </div>
       </div>
     </aside>

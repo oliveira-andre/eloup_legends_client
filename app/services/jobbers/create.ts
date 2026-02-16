@@ -8,7 +8,7 @@ interface CreateJobberRequest {
   position: number;
   observation: string;
   eloId: string;
-  file: File;
+  file: string;
 }
 
 export const createJobber = async ({ name, email, password, rank, position, observation, eloId, file }: CreateJobberRequest) => {

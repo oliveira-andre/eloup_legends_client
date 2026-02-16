@@ -20,6 +20,11 @@ export default function ServicesPage() {
     setElosData(responseElos ?? []);
   }
 
+  async function deleteElo(id: string) {
+    await elos.delete(id);
+    fetchElos();
+  }
+
   return (
     <div className="flex h-screen overflow-hidden services-container">
       <AdminSidebar />
@@ -29,7 +34,7 @@ export default function ServicesPage() {
         <header className="h-20 bg-[#091428]/50 flex items-center justify-between px-8 border-b border-white/5">
           <h1 className="text-2xl font-bold text-white">Catálogo de Elos E Ranks</h1>
 
-          <Link href="/services/new" className="bg-lol-gold hover:bg-yellow-600 text-black font-bold py-2 px-6 rounded flex items-center gap-2 transition transform active:scale-95 shadow-lg shadow-lol-gold/20">
+          <Link href="/elos/new" className="bg-lol-gold hover:bg-yellow-600 text-black font-bold py-2 px-6 rounded flex items-center gap-2 transition transform active:scale-95 shadow-lg shadow-lol-gold/20">
             <i className="fa-solid fa-plus"></i>
             <span className="hidden sm:inline">Novo Elo / Rank</span>
           </Link>
@@ -73,8 +78,10 @@ export default function ServicesPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <button className="w-8 h-8 rounded bg-gray-800 hover:bg-lol-blue transition text-white"><i className="fa-solid fa-pen text-xs"></i></button>
-                        <button className="w-8 h-8 rounded bg-gray-800 hover:bg-red-500 transition text-white"><i className="fa-solid fa-trash text-xs"></i></button>
+                        <Link href={`/elos/${elo.id}`} className="w-8 h-8 rounded bg-gray-800 hover:bg-lol-blue transition text-white flex items-center justify-center cursor-pointer">
+                          <i className="fa-solid fa-pen text-xs"></i>
+                        </Link>
+                        <button onClick={() => deleteElo(elo.id)} className="w-8 h-8 rounded bg-gray-800 hover:bg-red-500 transition text-white cursor-pointer"><i className="fa-solid fa-trash text-xs"></i></button>
                       </div>
                     </td>
                   </tr>

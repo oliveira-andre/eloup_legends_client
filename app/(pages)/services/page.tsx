@@ -22,6 +22,11 @@ export default function ServicesPage() {
     setServicesData(responseServices ?? []);
   }
 
+  async function deleteService(id: string) {
+    await services.delete(id);
+    fetchServices();
+  }
+
   return (
     <div className="flex h-screen overflow-hidden services-container">
       <AdminSidebar />
@@ -77,8 +82,12 @@ export default function ServicesPage() {
 
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <button className="w-8 h-8 rounded bg-gray-800 hover:bg-lol-blue transition text-white"><i className="fa-solid fa-pen text-xs"></i></button>
-                        <button className="w-8 h-8 rounded bg-gray-800 hover:bg-red-500 transition text-white"><i className="fa-solid fa-trash text-xs"></i></button>
+                        <Link href={`/services/${service.id}`} role="button" className="w-8 h-8 rounded bg-gray-800 hover:bg-lol-blue transition text-white flex items-center justify-center cursor-pointer">
+                          <i className="fa-solid fa-pen text-xs"></i>
+                        </Link>
+                        <button onClick={() => deleteService(service.id)} role="button" className="w-8 h-8 rounded bg-gray-800 hover:bg-red-500 transition text-white cursor-pointer">
+                          <i className="fa-solid fa-trash text-xs"></i>
+                        </button>
                       </div>
                     </td>
                   </tr>

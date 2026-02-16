@@ -1,0 +1,17 @@
+.new-service-container {
+  background-color: #010a13;
+  color: #f0f0f0;
+  font-family: 'Inter', sans-serif;
+}
+
+input, textarea, select {
+  background-color: transparent !important;
+  border: 1px solid #323232 !important;
+  color: white !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #C8AA6E !important;
+  outline: none !important;
+  box-shadow: 0 0 0 1px #C8AA6E !important;
+}
