@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 import { auth } from '../../services/auth';
 import './style.css';
@@ -23,10 +24,11 @@ export default function Login() {
     try {
       const response = await auth.signIn({ email, password });
 
-      console.log(response);
       localStorage.setItem('token', response.accessToken);
+      toast.success("Login realizado com sucesso");
       router.push('/dashboard');
     } catch (error) {
+      toast.error("Credenciais inválidas");
       console.error(error);
     }
   }
