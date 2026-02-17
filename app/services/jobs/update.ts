@@ -7,9 +7,13 @@ interface UpdateJobRequest {
   currentRank: number;
   rank: number;
   price: number;
+  serviceId: string;
+  currentEloId: string;
+  targetEloId: string;
+  jobberId?: string;
 }
 
-export const updateJob = async ({ id, name, observation, currentRank, rank, price }: UpdateJobRequest) => {
-  const { data } = await httpClient.patch(`/jobs/${id}`, { name, observation, currentRank, rank, price });
+export const updateJob = async ({ id, name, observation, currentRank, rank, price, serviceId, currentEloId, targetEloId, jobberId }: UpdateJobRequest) => {
+  const { data } = await httpClient.patch(`/jobs/${id}`, { name, observation, currentRank, rank, price, serviceId, currentEloId, targetEloId, joberId: jobberId ?? null });
   return data;
 };

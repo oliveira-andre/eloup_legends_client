@@ -1,5 +1,7 @@
 import { Elo } from './Elo'
+import { Jobber } from './Jobber';
 import { Service } from './Service'
+import { User } from './User';
 
 export interface Job {
   id: string;
@@ -16,4 +18,6 @@ export interface Job {
   service: Service;
   currentElo: Elo;
   targetElo: Elo;
+  user: User;
+  jobber: Jobber;
 }

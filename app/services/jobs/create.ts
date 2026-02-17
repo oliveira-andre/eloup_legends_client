@@ -9,9 +9,10 @@ interface CreateJobRequest {
   serviceId: string;
   currentEloId: string;
   targetEloId: string;
+  jobberId?: string;
 }
 
-export const createJob = async ({ name, observation, currentRank, rank, price, serviceId, currentEloId, targetEloId }: CreateJobRequest) => {
-  const { data } = await httpClient.post(`/jobs`, { name, observation, currentRank, rank, price, serviceId, currentEloId, targetEloId });
+export const createJob = async ({ name, observation, currentRank, rank, price, serviceId, currentEloId, targetEloId, jobberId }: CreateJobRequest) => {
+  const { data } = await httpClient.post(`/jobs`, { name, observation, currentRank, rank, price, serviceId, currentEloId, targetEloId, jobberId: jobberId ?? null });
   return data;
 };

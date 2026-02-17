@@ -13,6 +13,7 @@ import './style.css';
 
 export default function JobsPage() {
   const [jobsData, setJobsData] = useState<Job[]>([]);
+  const [userRole, setUserRole] = useState<string>('');
 
   useEffect(() => {
     fetchJobs();
@@ -20,6 +21,7 @@ export default function JobsPage() {
 
   async function fetchJobs() {
     const userResponse = await users.getMe();
+    setUserRole(userResponse.role ?? '');
     let responseJobs: Job[] = [];
 
     if (userResponse.role !== 'admin') {
@@ -102,8 +104,13 @@ export default function JobsPage() {
 
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <button className="w-8 h-8 rounded bg-gray-800 hover:bg-lol-blue transition text-white"><i className="fa-solid fa-pen text-xs"></i></button>
-                        <button className="w-8 h-8 rounded bg-gray-800 hover:bg-red-500 transition text-white"><i className="fa-solid fa-trash text-xs"></i></button>
+                        {userRole === 'admin' && (
+                          <Link href={`/jobs/${job.id}`} role="button" className="w-8 h-8 rounded bg-gray-800 hover:bg-lol-blue transition text-white flex items-center justify-center cursor-pointer"><i className="fa-solid fa-pen text-xs"></i></Link>
+                        )}
+
+                        {userRole === 'user' && (
+                          <Link href={`/jobs/${job.id}/reviews/create`} role="button" className="w-8 h-8 rounded bg-gray-800 hover:bg-lol-blue transition text-white flex items-center justify-center cursor-pointer"><i className="fa-solid fa-pen text-xs"></i></Link>
+                        )}
                       </div>
                     </td>
                   </tr>
