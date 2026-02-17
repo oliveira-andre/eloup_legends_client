@@ -58,7 +58,7 @@ export default function BoostersPage() {
 
                 <div className="mt-6 flex flex-col gap-1">
                   <span className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Performance</span>
-                  <span className="text-xs text-lol-blue font-bold">{Math.floor(Math.random() * 1000)} Pedidos Concluídos</span>
+                  <span className="text-xs text-lol-blue font-bold">{booster.jobs.length} Pedidos Concluídos</span>
                 </div>
               </div>
             ))}

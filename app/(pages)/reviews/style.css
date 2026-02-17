@@ -1,0 +1,62 @@
+.reviews-page-container {
+  background-color: #010a13;
+  color: #f0f0f0;
+  font-family: 'Inter', sans-serif;
+}
+
+.bg-lol-card {
+  background-color: #0A1428;
+}
+
+/* Review card hover effect */
+.review-card {
+  transition: all 0.3s ease;
+}
+
+.review-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Rating bar animation */
+.rating-bar {
+  transition: width 0.5s ease-out;
+}
+
+/* Text gradient */
+.text-gradient {
+  background: linear-gradient(to right, #0AC8B9, #C8AA6E);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Star animation on hover */
+.fa-star {
+  transition: transform 0.2s ease;
+}
+
+.review-card:hover .fa-star {
+  transform: scale(1.1);
+}
+
+/* Line clamp for long comments */
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Avatar gradient */
+.avatar-gradient {
+  background: linear-gradient(135deg, #C8AA6E, #F0D78C);
+}
+
+/* CTA button glow */
+.cta-button {
+  box-shadow: 0 0 20px rgba(200, 170, 110, 0.4);
+}
+
+.cta-button:hover {
+  box-shadow: 0 0 30px rgba(200, 170, 110, 0.6);
+}

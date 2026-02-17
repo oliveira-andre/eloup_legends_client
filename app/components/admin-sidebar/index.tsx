@@ -89,6 +89,15 @@ export default function AdminSidebar() {
             <span>Elos & Preços</span>
           </Link>
         )}
+
+        {role === 'admin' && (
+          <Link href="/admin-reviews" className={`flex items-center gap-3 px-4 py-3 ${pathname === '/admin-reviews' ?
+            'bg-gradient-to-r from-lol-gold/20 to-transparent border-l-4 border-lol-gold text-white rounded-r-lg transition' :
+            'text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition'}`}>
+            <i className="fa-solid fa-star w-5 group-hover:text-lol-blue transition"></i>
+            <span>Avaliações</span>
+          </Link>
+        )}
       </nav>
 
       <div className="p-4 border-t border-white/5">

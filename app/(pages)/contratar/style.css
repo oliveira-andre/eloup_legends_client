@@ -1,0 +1,189 @@
+.contratar-container {
+  background-color: #010a13;
+  color: #f0f0f0;
+  min-height: 100vh;
+}
+
+/* Animation for step transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Input styling */
+.bg-lol-input {
+  background-color: #0A1428;
+}
+
+/* Custom scrollbar for the page */
+.contratar-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.contratar-container::-webkit-scrollbar-track {
+  background: #091428;
+}
+
+.contratar-container::-webkit-scrollbar-thumb {
+  background: #C8AA6E;
+  border-radius: 4px;
+}
+
+.contratar-container::-webkit-scrollbar-thumb:hover {
+  background: #d4b87a;
+}
+
+/* Elo card hover effects */
+.elo-card {
+  transition: all 0.2s ease;
+}
+
+.elo-card:hover {
+  transform: scale(1.05);
+}
+
+.elo-card.selected {
+  border-color: #C8AA6E;
+  background: rgba(200, 170, 110, 0.1);
+  box-shadow: 0 0 20px rgba(200, 170, 110, 0.3);
+}
+
+/* Service card styles */
+.service-card {
+  transition: all 0.2s ease;
+}
+
+.service-card:hover {
+  border-color: #C8AA6E;
+}
+
+.service-card.selected {
+  border-color: #C8AA6E;
+  background: rgba(200, 170, 110, 0.1);
+}
+
+/* Progress step animation */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(200, 170, 110, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(200, 170, 110, 0.8);
+  }
+}
+
+.step-active {
+  animation: pulse-glow 2s infinite;
+}
+
+/* Arrow animation */
+@keyframes bounce-right {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+}
+
+.arrow-animate {
+  animation: bounce-right 1s ease-in-out infinite;
+}
+
+/* Order summary sticky behavior */
+@media (min-width: 1024px) {
+  .sticky {
+    position: sticky;
+    top: 7rem;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .contratar-container .grid-cols-4 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .contratar-container .grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Button hover effects */
+.contratar-container button[type="submit"]:not(:disabled):hover {
+  filter: brightness(1.1);
+}
+
+/* Form field focus states */
+.contratar-container input:focus,
+.contratar-container select:focus,
+.contratar-container textarea:focus {
+  outline: none;
+  border-color: #C8AA6E;
+  box-shadow: 0 0 0 2px rgba(200, 170, 110, 0.2);
+}
+
+/* Select dropdown styling */
+.contratar-container select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+/* Elo image container */
+.elo-image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.elo-image-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.3), transparent);
+  pointer-events: none;
+}
+
+/* Glow effect for selected items */
+.glow-gold {
+  box-shadow: 0 0 20px rgba(200, 170, 110, 0.4);
+}
+
+.glow-blue {
+  box-shadow: 0 0 20px rgba(10, 200, 185, 0.4);
+}
+
+/* Price display */
+.price-display {
+  background: linear-gradient(135deg, rgba(200, 170, 110, 0.1), rgba(200, 170, 110, 0.05));
+  border: 1px solid rgba(200, 170, 110, 0.2);
+}
+
+/* Loading spinner */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fa-spin {
+  animation: spin 1s linear infinite;
+}

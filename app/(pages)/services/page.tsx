@@ -23,6 +23,10 @@ export default function ServicesPage() {
   }
 
   async function deleteService(id: string) {
+    if (!confirm('Tem certeza que deseja excluir este Serviço?')) {
+      return;
+    }
+
     await services.delete(id);
     fetchServices();
   }

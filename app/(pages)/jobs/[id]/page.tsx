@@ -25,6 +25,7 @@ export default function ShowJobPage() {
   const [currentRank, setCurrentRank] = useState('');
   const [rank, setRank] = useState('');
   const [price, setPrice] = useState('');
+  const [status, setStatus] = useState('');
   const [serviceId, setServiceId] = useState<string>('');
   const [currentEloId, setCurrentEloId] = useState<string>('');
   const [targetEloId, setTargetEloId] = useState<string>('');
@@ -35,7 +36,7 @@ export default function ShowJobPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      await jobs.update({ id: id as string, name, observation, currentRank: Number(currentRank), rank: Number(rank), price: Number(price), serviceId, currentEloId, targetEloId, jobberId });
+      await jobs.update({ id: id as string, name, observation, status, currentRank: Number(currentRank), rank: Number(rank), price: Number(price), serviceId, currentEloId, targetEloId, jobberId });
       toast.success('Serviço atualizado com sucesso');
       window.location.href = '/jobs';
     } catch (error) {
@@ -57,6 +58,7 @@ export default function ShowJobPage() {
     setCurrentRank(responseJob?.currentRank ?? '');
     setRank(responseJob?.rank ?? '');
     setPrice(responseJob?.price ?? '');
+    setStatus(responseJob?.status ?? '');
     setServiceId(responseJob?.serviceId ?? '');
     setCurrentEloId(responseJob?.currentEloId ?? '');
     setTargetEloId(responseJob?.targetEloId ?? '');
@@ -212,6 +214,23 @@ export default function ShowJobPage() {
                     {servicesData.map((service) => (
                       <option key={service.id} value={service.id}>{service.name}</option>
                     ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-lol-gold mb-2">Status</label>
+                  <select
+                    name="status"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 rounded transition"
+                  >
+                    <option value="">Selecione um status</option>
+                    <option value="pending">Pendente</option>
+                    <option value="in_progress">Em andamento</option>
+                    <option value="completed">Completo</option>
+                    <option value="cancelled">Cancelado</option>
                   </select>
                 </div>
 

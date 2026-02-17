@@ -21,11 +21,11 @@ export default function Header() {
           </div>
 
           <nav className="hidden md:flex space-x-8">
-            <Link href="#" className={`font-medium border-b-2 pb-1 ${pathname === '/' ? 'text-lol-gold border-lol-gold' : 'text-gray-300 hover:text-white transition'}`}>Início</Link>
-            <Link href="#servicos" className="text-gray-300 hover:text-white transition">Serviços</Link>
-            <Link href="/boosters" className={`font-medium border-b-2 pb-1 ${pathname === '/boosters' ? 'text-lol-gold border-lol-gold' : 'text-gray-300 hover:text-white transition'}`}>Boosters</Link>
-            <Link href="/reviews" className={`font-medium border-b-2 pb-1 ${pathname === '/reviews' ? 'text-lol-gold border-lol-gold' : 'text-gray-300 hover:text-white transition'}`}>Reviews</Link>
-            <Link href="#como-funciona" className="text-gray-300 hover:text-white transition">Como Funciona</Link>
+            <Link href="/" className={`font-medium border-b-2 pb-1 ${pathname === '/' ? 'text-lol-gold border-lol-gold' : 'text-gray-300 hover:text-white transition border-transparent'}`}>Início</Link>
+            <Link href="/#servicos" className="text-gray-300 hover:text-white transition">Serviços</Link>
+            <Link href="/contratar" className={`font-medium border-b-2 pb-1 ${pathname === '/contratar' ? 'text-lol-gold border-lol-gold' : 'text-gray-300 hover:text-white transition border-transparent'}`}>Contratar</Link>
+            <Link href="/boosters" className={`font-medium border-b-2 pb-1 ${pathname === '/boosters' ? 'text-lol-gold border-lol-gold' : 'text-gray-300 hover:text-white transition border-transparent'}`}>Boosters</Link>
+            <Link href="/reviews" className={`font-medium border-b-2 pb-1 ${pathname === '/reviews' ? 'text-lol-gold border-lol-gold' : 'text-gray-300 hover:text-white transition border-transparent'}`}>Reviews</Link>
           </nav>
 
           <div>

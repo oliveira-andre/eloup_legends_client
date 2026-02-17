@@ -109,7 +109,9 @@ export default function JobsPage() {
                         )}
 
                         {userRole === 'user' && (
-                          <Link href={`/jobs/${job.id}/reviews/create`} role="button" className="w-8 h-8 rounded bg-gray-800 hover:bg-lol-blue transition text-white flex items-center justify-center cursor-pointer"><i className="fa-solid fa-pen text-xs"></i></Link>
+                          <Link href={`/jobs/${job.id}/reviews/create`} role="button" className="w-8 h-8 rounded bg-gray-800 hover:bg-lol-gold transition text-white flex items-center justify-center cursor-pointer" title="Avaliar serviço">
+                            <i className="fa-solid fa-star text-xs"></i>
+                          </Link>
                         )}
                       </div>
                     </td>

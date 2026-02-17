@@ -21,6 +21,10 @@ export default function ServicesPage() {
   }
 
   async function deleteJobber(id: string) {
+    if (!confirm('Tem certeza que deseja excluir este Jobber / Booster?')) {
+      return;
+    }
+
     await jobbers.delete(id);
     fetchJobbers();
   }

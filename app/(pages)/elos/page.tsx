@@ -21,6 +21,10 @@ export default function ServicesPage() {
   }
 
   async function deleteElo(id: string) {
+    if (!confirm('Tem certeza que deseja excluir este Elo / Rank?')) {
+      return;
+    }
+
     await elos.delete(id);
     fetchElos();
   }

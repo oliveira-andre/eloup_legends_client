@@ -1,4 +1,5 @@
 import { Elo } from "./Elo";
+import { Job } from "./Job";
 
 export interface Jobber {
   id: string;
@@ -11,4 +12,5 @@ export interface Jobber {
   updatedAt: string;
   eloId: string;
   elo: Elo;
+  jobs: Job[];
 }

@@ -37,11 +37,11 @@ export default function Home() {
               Serviço profissional de Elo Boosting e Coaching. Segurança máxima, jogadores Desafiantes e garantia de satisfação.
             </p>
             <div className="flex flex-col md:flex-row gap-4 justify-center">
-              <a href="#servicos" className="px-8 py-4 bg-lol-gold text-black font-bold rounded hover:bg-yellow-500 transition shadow-[0_0_15px_rgba(200,170,110,0.5)]">
-                Ver Serviços
+              <a href="/contratar" className="px-8 py-4 bg-lol-gold text-black font-bold rounded hover:bg-yellow-500 transition shadow-[0_0_15px_rgba(200,170,110,0.5)]">
+                Contratar Agora
               </a>
-              <a href="#" className="px-8 py-4 bg-transparent border border-gray-600 text-white font-bold rounded hover:bg-white/10 transition">
-                Falar no WhatsApp
+              <a href="#servicos" className="px-8 py-4 bg-transparent border border-gray-600 text-white font-bold rounded hover:bg-white/10 transition">
+                Ver Serviços
               </a>
             </div>
           </div>
@@ -80,9 +80,9 @@ export default function Home() {
                                 <span className="text-2xl font-bold text-lol-blue">R$ {plainUnit(service.price)},{decimalUnit(service.price)}</span>
                                 {/* <span className="text-xs text-gray-400"> /Partida</span> */}
                             </div>
-                            <button className="bg-transparent border border-lol-gold text-lol-gold hover:bg-lol-gold hover:text-black font-bold py-2 px-4 rounded transition cursor-pointer">
+                            <a href={`/contratar?serviceId=${service.id}`} className="bg-transparent border border-lol-gold text-lol-gold hover:bg-lol-gold hover:text-black font-bold py-2 px-4 rounded transition cursor-pointer">
                                 Contratar
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>

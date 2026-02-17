@@ -1,0 +1,41 @@
+.review-container {
+  background-color: #010a13;
+  color: #f0f0f0;
+  font-family: 'Inter', sans-serif;
+}
+
+input, textarea, select {
+  background-color: #0A1428 !important;
+  border: 1px solid #323232 !important;
+  color: white !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #C8AA6E !important;
+  outline: none !important;
+  box-shadow: 0 0 0 1px #C8AA6E !important;
+}
+
+/* Star rating animation */
+.fa-star {
+  transition: all 0.15s ease;
+}
+
+.fa-star:hover {
+  transform: scale(1.2);
+}
+
+/* Button hover effect */
+button[type="submit"]:not(:disabled):hover {
+  filter: brightness(1.1);
+}
+
+/* Card styling */
+.bg-lol-card {
+  background-color: #0A1428;
+}
+
+/* Textarea placeholder */
+textarea::placeholder {
+  color: #4a5568;
+}
