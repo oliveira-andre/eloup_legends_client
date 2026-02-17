@@ -1,7 +1,21 @@
 import { Job } from "@/app/entities/Job";
 import httpClient from "../httpClient";
 
-export const getAllJobs = async () => {
+interface jobsParams {
+  userId?: string;
+  jobberId?: string;
+}
+
+export const getAllJobs = async ({ userId, jobberId }: jobsParams) => {
+  if (userId) {
+    const { data } = await httpClient.get<Job[]>(`/jobs?userId=${userId}`);
+    return data;
+  }
+  if (jobberId) {
+    const { data } = await httpClient.get<Job[]>(`/jobs?jobberId=${jobberId}`);
+    return data;
+  }
+
   const { data } = await httpClient.get<Job[]>("/jobs");
   return data;
 };

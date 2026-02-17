@@ -1,0 +1,23 @@
+.boosters-page-container {
+    background-color: #010a13;
+    color: #f0f0f0;
+    font-family: 'Inter', sans-serif;
+}
+
+.booster-card {
+  background: linear-gradient(180deg, #0A1428 0%, #050b14 100%);
+  border: 1px solid rgba(200, 170, 110, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.booster-card:hover {
+  border-color: #C8AA6E;
+  transform: translateY(-8px);
+  box-shadow: 0 10px 30px -10px rgba(200, 170, 110, 0.2);
+}
+
+.elo-medal {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}

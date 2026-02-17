@@ -11,6 +11,8 @@ export default function AdminSidebar() {
   const pathname = usePathname();
 
   const [name, setName] = useState('');
+  const [role, setRole] = useState('');
+  const [id, setId] = useState('');
 
   useEffect(() => {
     fetchUser();
@@ -21,6 +23,8 @@ export default function AdminSidebar() {
     try {
       const responseUser = await users.getMe();
       setName(responseUser.name);
+      setRole(responseUser.role ?? '');
+      setId(responseUser.id ?? '');
     } catch (error) {
       redirect('/login');
     }
@@ -42,13 +46,15 @@ export default function AdminSidebar() {
       </div>
 
       <nav className="flex-1 px-4 py-6 space-y-2">
-        <Link href="/dashboard" className={`flex items-center gap-3 px-4 py-3 
-          ${pathname === '/dashboard' ?
-            'bg-gradient-to-r from-lol-gold/20 to-transparent border-l-4 border-lol-gold text-white rounded-r-lg transition' :
-            'text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition'}`}>
-          <i className="fa-solid fa-chart-pie w-5"></i>
-          <span className="font-medium">Visão Geral</span>
-        </Link>
+        {role === 'admin' && (
+          <Link href="/dashboard" className={`flex items-center gap-3 px-4 py-3 
+            ${pathname === '/dashboard' ?
+              'bg-gradient-to-r from-lol-gold/20 to-transparent border-l-4 border-lol-gold text-white rounded-r-lg transition' :
+              'text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition'}`}>
+            <i className="fa-solid fa-chart-pie w-5"></i>
+            <span className="font-medium">Visão Geral</span>
+          </Link>
+        )}
 
         <Link href="/jobs" className={`flex items-center gap-3 px-4 py-3 ${pathname === '/jobs' ?
           'bg-gradient-to-r from-lol-gold/20 to-transparent border-l-4 border-lol-gold text-white rounded-r-lg transition' :
@@ -57,26 +63,32 @@ export default function AdminSidebar() {
           <span>Pedidos (Jobs)</span>
         </Link>
 
-        <Link href="/services" className={`flex items-center gap-3 px-4 py-3 ${pathname === '/services' ?
-          'bg-gradient-to-r from-lol-gold/20 to-transparent border-l-4 border-lol-gold text-white rounded-r-lg transition' :
-          'text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition'}`}>
-          <i className="fa-solid fa-list w-5 group-hover:text-lol-blue transition"></i>
-          <span>Serviços</span>
-        </Link>
+        {role === 'admin' && (
+          <Link href="/services" className={`flex items-center gap-3 px-4 py-3 ${pathname === '/services' ?
+            'bg-gradient-to-r from-lol-gold/20 to-transparent border-l-4 border-lol-gold text-white rounded-r-lg transition' :
+            'text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition'}`}>
+            <i className="fa-solid fa-list w-5 group-hover:text-lol-blue transition"></i>
+            <span>Serviços</span>
+          </Link>
+        )}
 
-        <Link href="/jobbers" className={`flex items-center gap-3 px-4 py-3 ${pathname === '/jobbers' ?
-          'bg-gradient-to-r from-lol-gold/20 to-transparent border-l-4 border-lol-gold text-white rounded-r-lg transition' :
-          'text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition'}`}>
-          <i className="fa-solid fa-users w-5 group-hover:text-lol-blue transition"></i>
-          <span>Jobbers / Boosters</span>
-        </Link>
+        {role === 'admin' && (
+          <Link href="/jobbers" className={`flex items-center gap-3 px-4 py-3 ${pathname === '/jobbers' ?
+            'bg-gradient-to-r from-lol-gold/20 to-transparent border-l-4 border-lol-gold text-white rounded-r-lg transition' :
+            'text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition'}`}>
+            <i className="fa-solid fa-users w-5 group-hover:text-lol-blue transition"></i>
+            <span>Jobbers / Boosters</span>
+          </Link>
+        )}
 
-        <Link href="/elos" className={`flex items-center gap-3 px-4 py-3 ${pathname === '/elos' ?
-          'bg-gradient-to-r from-lol-gold/20 to-transparent border-l-4 border-lol-gold text-white rounded-r-lg transition' :
-          'text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition'}`}>
-          <i className="fa-solid fa-ranking-star w-5 group-hover:text-lol-blue transition"></i>
-          <span>Elos & Preços</span>
-        </Link>
+        {role === 'admin' && (
+          <Link href="/elos" className={`flex items-center gap-3 px-4 py-3 ${pathname === '/elos' ?
+            'bg-gradient-to-r from-lol-gold/20 to-transparent border-l-4 border-lol-gold text-white rounded-r-lg transition' :
+            'text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition'}`}>
+            <i className="fa-solid fa-ranking-star w-5 group-hover:text-lol-blue transition"></i>
+            <span>Elos & Preços</span>
+          </Link>
+        )}
       </nav>
 
       <div className="p-4 border-t border-white/5">

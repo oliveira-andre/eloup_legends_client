@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 import { auth } from '../../services/auth';
+import { users } from '@/app/services/users';
 import './style.css';
 
 export default function Login() {
@@ -26,7 +27,12 @@ export default function Login() {
 
       localStorage.setItem('token', response.accessToken);
       toast.success("Login realizado com sucesso");
-      router.push('/dashboard');
+      const userResponse = await users.getMe();
+      if (userResponse.role === 'admin') {
+        window.location.href = '/dashboard';
+      } else {
+        window.location.href = '/jobs';
+      }
     } catch (error) {
       toast.error("Credenciais inválidas");
       console.error(error);

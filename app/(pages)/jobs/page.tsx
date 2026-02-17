@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import AdminSidebar from '../../components/admin-sidebar';
 import { jobs } from '../../services/jobs';
+import { users } from '../../services/users';
 import { Job } from '../../entities/Job';
 import plainUnit from '../../utils/plainUnit';
 import decimalUnit from '../../utils/decimalUnit';
@@ -18,7 +19,18 @@ export default function JobsPage() {
   }, []);
 
   async function fetchJobs() {
-    const responseJobs = await jobs.getAll();
+    const userResponse = await users.getMe();
+    let responseJobs: Job[] = [];
+
+    if (userResponse.role !== 'admin') {
+      if (userResponse.role === 'jobber') {
+        responseJobs = await jobs.getAll({ jobberId: userResponse.id });
+      } else {
+        responseJobs = await jobs.getAll({ userId: userResponse.id });
+      }
+    } else {
+     responseJobs = await jobs.getAll({});
+    }
     setJobsData(responseJobs ?? []);
   }
 

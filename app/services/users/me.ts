@@ -3,6 +3,8 @@ import httpClient from "../httpClient";
 interface GetMeResponse {
   name: string;
   email: string;
+  role?: string;
+  id?: string;
 }
 export const getMe = async () => {
   const token = localStorage.getItem('token');
