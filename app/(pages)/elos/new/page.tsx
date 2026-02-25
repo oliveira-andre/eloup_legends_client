@@ -1,28 +1,41 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 
 import AdminSidebar from '../../../components/admin-sidebar';
 import { elos } from '@/app/services/elos';
+import { Service } from '@/app/entities/Service';
+import { services } from '@/app/services/services';
 import './style.css';
 
 export default function NewServicePage() {
+  const [servicesData, setServicesData] = useState<Service[] | []>([]);
   const [name, setName] = useState('');
   const [hasRank, setHasRank] = useState(false);
   const [position, setPosition] = useState('');
   const [picture, setPicture] = useState('');
+  const [prices, setPrices] = useState<{ [key: string]: number }>({});
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      await elos.create({ name, has_rank: hasRank, position: Number(position), picture });
+      await elos.create({ name, has_rank: hasRank, position: Number(position), picture, prices });
       toast.success('Elo / Rank cadastrado com sucesso');
       window.location.href = '/elos';
     } catch (error) {
       toast.error('Erro ao cadastrar Elo / Rank');
     }
+  }
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  async function fetchServices() {
+    const responseServices = await services.getAll();
+    setServicesData(responseServices ?? []);
   }
 
   return (
@@ -80,6 +93,23 @@ export default function NewServicePage() {
                     />
                   </div>
                 </div>
+
+                {servicesData.map((service: Service) => (
+                  <div className="grid grid-cols-2 gap-4" key={service.id}>
+                    <div>
+                      <label className="block text-sm font-medium text-lol-gold mb-2">Valor de {service.name}</label>
+                      <input
+                        type="number"
+                        name="position"
+                        value={prices[service.id] ? (prices[service.id] / 100).toFixed(2) : (service.price / 100).toFixed(2)}
+                        onChange={(e) => setPrices({ ...prices, [service.id]: Number(e.target.value) * 100 })}
+                        required
+                        placeholder="Ex: 1"
+                        className="w-full px-4 py-3 rounded transition"
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <div className="space-y-6">

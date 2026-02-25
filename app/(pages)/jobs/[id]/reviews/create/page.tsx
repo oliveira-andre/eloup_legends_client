@@ -9,7 +9,9 @@ import AdminSidebar from '../../../../../components/admin-sidebar';
 import { reviews } from '@/app/services/reviews';
 import { jobs } from '@/app/services/jobs';
 import { users } from '@/app/services/users';
+import { jobbers } from '@/app/services/jobbers';
 import { Job } from '@/app/entities/Job';
+import { Jobber } from '@/app/entities/Jobber';
 
 import './style.css';
 
@@ -18,6 +20,7 @@ export default function CreateReviewPage() {
   const router = useRouter();
   
   const [job, setJob] = useState<Job | null>(null);
+  const [jobber, setJobber] = useState<Jobber | null>(null);
   const [userId, setUserId] = useState<string>('');
   const [rating, setRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
@@ -33,6 +36,10 @@ export default function CreateReviewPage() {
     try {
       const responseJob = await jobs.show(id as string);
       setJob(responseJob);
+      if (responseJob?.joberId) {
+        const responseJobber = await jobbers.show(responseJob.joberId);
+        setJobber(responseJobber ?? null);
+      }
     } catch (error) {
       toast.error('Erro ao carregar informações do pedido');
     }
@@ -143,7 +150,7 @@ export default function CreateReviewPage() {
                 </div>
                 <div>
                   <span className="text-xs text-gray-500 block">Booster</span>
-                  <span className="text-white font-medium">{job.jobber?.name || 'Não atribuído'}</span>
+                  <span className="text-white font-medium">{jobber?.name || 'Não atribuído'}</span>
                 </div>
               </div>
             </div>

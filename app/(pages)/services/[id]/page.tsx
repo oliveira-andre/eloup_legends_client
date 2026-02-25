@@ -13,7 +13,7 @@ export default function ShowServicePage() {
   const { id } = useParams();
   const [name, setName] = useState('');
   const [tagline, setTagline] = useState('');
-  const [price, setPrice] = useState('');
+  const [price, setPrice] = useState(0);
   const [position, setPosition] = useState('');
   const [picture, setPicture] = useState('');
   const [description, setDescription] = useState('');
@@ -38,7 +38,7 @@ export default function ShowServicePage() {
     const responseService = await services.show(id as string);
     setName(responseService?.name ?? '');
     setTagline(responseService?.tagline ?? '');
-    setPrice(responseService?.price ?? '');
+    setPrice(responseService?.price ?? 0);
     setPosition(responseService?.position ?? '');
     // setPicture(responseService?.picture ?? '');
     setDescription(responseService?.description ?? '');
@@ -93,8 +93,8 @@ export default function ShowServicePage() {
                       <input
                         type="number"
                         name="price"
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value)}
+                        value={price ? (Number(price) / 100).toFixed(2) : ''}
+                        onChange={(e) => setPrice(Number(e.target.value) * 100)}
                         required
                         placeholder="50"
                         className="w-full pl-10 pr-4 py-3 rounded transition"

@@ -4,4 +4,5 @@ export interface Elo {
   has_rank: boolean;
   position: number;
   picture: string;
+  prices: { [key: string]: number };
 }

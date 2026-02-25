@@ -246,7 +246,7 @@ export default function ShowJobPage() {
               </p>
 
               <div className="flex gap-4 w-full md:w-auto">
-                <Link href="/elos" className="flex-1 md:flex-none px-8 py-3 rounded font-bold text-gray-400 hover:text-white transition cursor-pointer">
+                <Link href="/jobs" className="flex-1 md:flex-none px-8 py-3 rounded font-bold text-gray-400 hover:text-white transition cursor-pointer">
                   Cancelar
                 </Link>
                 <button type="submit" className="flex-1 md:flex-none px-12 py-3 bg-gradient-to-r from-lol-gold to-yellow-600 text-black font-black rounded shadow-[0_0_20px_rgba(200,170,110,0.3)] hover:scale-105 transition transform cursor-pointer">

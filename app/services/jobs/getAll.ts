@@ -12,7 +12,7 @@ export const getAllJobs = async ({ userId, jobberId }: jobsParams) => {
     return data;
   }
   if (jobberId) {
-    const { data } = await httpClient.get<Job[]>(`/jobs?jobberId=${jobberId}`);
+    const { data } = await httpClient.get<Job[]>(`/jobs?joberId=${jobberId}`);
     return data;
   }
 

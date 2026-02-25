@@ -7,6 +7,8 @@ import { useParams } from 'next/navigation';
 
 import AdminSidebar from '../../../components/admin-sidebar';
 import { elos } from '@/app/services/elos';
+import { services } from '@/app/services/services';
+import { Service } from '@/app/entities/Service';
 import './style.css';
 
 export default function ShowServicePage() {
@@ -15,11 +17,13 @@ export default function ShowServicePage() {
   const [hasRank, setHasRank] = useState(false);
   const [position, setPosition] = useState('');
   const [picture, setPicture] = useState('');
+  const [servicesData, setServicesData] = useState<Service[] | []>([]);
+  const [prices, setPrices] = useState<{ [key: string]: number }>({});
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      await elos.update({ id: id as string, name, has_rank: hasRank, position: Number(position), picture });
+      await elos.update({ id: id as string, name, has_rank: hasRank, position: Number(position), picture, prices });
       toast.success('Elo / Rank atualizado com sucesso');
       window.location.href = '/elos';
     } catch (error) {
@@ -29,6 +33,7 @@ export default function ShowServicePage() {
 
   useEffect(() => {
     fetchElo();
+    fetchServices();
   }, [id]);
 
   async function fetchElo() {
@@ -37,6 +42,12 @@ export default function ShowServicePage() {
     setHasRank(responseElo?.has_rank ?? false);
     setPosition(responseElo?.position ?? '');
     setPicture(responseElo?.picture ?? '');
+    setPrices(responseElo?.prices ?? {});
+  }
+
+  async function fetchServices() {
+    const responseServices = await services.getAll();
+    setServicesData(responseServices ?? []);
   }
 
   return (
@@ -94,6 +105,23 @@ export default function ShowServicePage() {
                     />
                   </div>
                 </div>
+
+                {servicesData.map((service: Service) => (
+                  <div className="grid grid-cols-2 gap-4" key={service.id}>
+                    <div>
+                      <label className="block text-sm font-medium text-lol-gold mb-2">Valor de {service.name}</label>
+                      <input
+                        type="number"
+                        name="position"
+                        value={prices[service.id] ? (prices[service.id] / 100).toFixed(2) : (service.price / 100).toFixed(2)}
+                        onChange={(e) => setPrices({ ...prices, [service.id]: Number(e.target.value) * 100 })}
+                        required
+                        placeholder="Ex: 1"
+                        className="w-full px-4 py-3 rounded transition"
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <div className="space-y-6">
@@ -103,18 +131,24 @@ export default function ShowServicePage() {
                     type="file"
                     id="picture-url"
                     name="picture"
-                    value={picture}
-                    onChange={(e) => setPicture(e.target.value)}
+                    // value={picture}
+                    // onChange={(e) => setPicture(e.target.value)}
                     placeholder="https://imgur.com/..."
                     className="w-full px-4 py-3 rounded transition"
                   />
                 </div>
 
                 <div className="w-full h-40 bg-black/40 rounded border border-dashed border-gray-700 flex items-center justify-center overflow-hidden relative group">
-                  {/* <img id="preview-img" src={picture} className="hidden w-full h-full object-cover" /> */}
                   <div id="preview-placeholder" className="text-gray-600 flex flex-col items-center">
-                    <i className="fa-regular fa-image text-3xl mb-2"></i>
-                    <span className="text-xs italic">Preview da Imagem</span>
+                    {picture && (
+                      <img id="preview-img" src={process.env.NEXT_PUBLIC_API_URL + `/${picture}`} className="w-full h-full object-cover" />
+                    )}
+                    {!picture && (
+                      <>
+                        <i className="fa-regular fa-image text-3xl mb-2"></i>
+                        <span className="text-xs italic">Preview da Imagem</span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

@@ -89,41 +89,69 @@ export default function ContratarPage() {
       return;
     }
 
-    // Calculate total "rank value" for each position
-    // Ranks go from IV (4) to I (1), where I is higher
-    // Each elo tier has 4 ranks if has_rank, otherwise just 1 unit
-    // totalValue = (position * 4) + (4 - rank) for ranked elos
-    // This way: Iron IV = 4, Iron I = 7, Bronze IV = 8, Bronze I = 11, etc.
-    
     const currentRankNum = Number(currentRank) || 4; // Default to IV if not selected
     const targetRankNum = Number(targetRank) || 1;   // Default to I if not selected
-    
-    let currentValue: number;
-    let targetValue: number;
-    
-    if (currentEloData.has_rank) {
-      // For ranked elos: position * 4 + (4 - rank)
-      // Rank 4 (IV) = 0 extra, Rank 1 (I) = 3 extra
-      currentValue = (currentEloData.position * 4) + (4 - currentRankNum);
-    } else {
-      // For unranked elos (Master, GM, Challenger): just use position * 4
-      currentValue = currentEloData.position * 4;
-    }
-    
-    if (targetEloData.has_rank) {
-      targetValue = (targetEloData.position * 4) + (4 - targetRankNum);
-    } else {
-      targetValue = targetEloData.position * 4;
-    }
- 
-    // Calculate the difference in "steps"
-    const totalSteps = Math.max(targetValue - currentValue, 0);
-    
-    // Price calculation: base price + (steps * priceUnit)
-    // Each step is one rank progression (e.g., Silver IV -> Silver III)
-    let calculatedPrice = service.price * totalSteps;
 
-    setPrice(Math.max(calculatedPrice, service.price));
+    // Get all elos sorted by position
+    const sortedElos = [...elosData].sort((a, b) => a.position - b.position);
+    
+    // Find elos in the path (from current to target, inclusive)
+    const elosInPath = sortedElos.filter(
+      elo => elo.position >= currentEloData.position && elo.position <= targetEloData.position
+    );
+
+    let calculatedPrice = 0;
+
+    // If same elo, just calculate rank difference
+    if (currentEloData.id === targetEloData.id) {
+      if (currentEloData.has_rank) {
+        // Ranks go from IV (4) to I (1), so currentRank - targetRank = steps
+        const ranksToClimb = Math.max(currentRankNum - targetRankNum, 0);
+        const eloPrice = currentEloData.prices?.[serviceId] || service.price;
+        calculatedPrice = ranksToClimb * eloPrice;
+      }
+    } else {
+      // Different elos - iterate through each elo in the path
+      for (let i = 0; i < elosInPath.length; i++) {
+        const elo = elosInPath[i];
+        const eloPrice = elo.prices?.[serviceId] || service.price;
+        const isFirstElo = elo.id === currentEloData.id;
+        const isLastElo = elo.id === targetEloData.id;
+
+        let ranksInThisElo = 0;
+
+        if (isFirstElo) {
+          // Current elo: count ranks from currentRank to I (rank 1)
+          if (elo.has_rank) {
+            // From currentRank down to 1 (e.g., from IV=4 to I=1 is 3 steps)
+            ranksInThisElo = currentRankNum - 1;
+          } else {
+            // Unranked elos (Master, GM, Challenger) count as 1 unit
+            ranksInThisElo = 1;
+          }
+        } else if (isLastElo) {
+          // Target elo: count ranks from IV (rank 4) to targetRank
+          if (elo.has_rank) {
+            // From IV=4 down to targetRank (e.g., to I=1 is 3 steps, to II=2 is 2 steps)
+            ranksInThisElo = 4 - targetRankNum;
+          } else {
+            // Unranked elos count as 1 unit
+            ranksInThisElo = 1;
+          }
+        } else {
+          // Intermediate elo: count all 4 ranks (IV -> III -> II -> I)
+          if (elo.has_rank) {
+            ranksInThisElo = 4;
+          } else {
+            ranksInThisElo = 1;
+          }
+        }
+
+        calculatedPrice += ranksInThisElo * eloPrice;
+      }
+    }
+
+    setPrice(Math.max(calculatedPrice, 0));
   }
 
   const currentElo = elosData.find(e => e.id === currentEloId);
@@ -197,7 +225,7 @@ export default function ContratarPage() {
   }
 
   function nextStep() {
-    if (step === 1) {
+    if (step === 3) {
       if (!email || !password || !confirmPassword) {
         toast.error('Por favor, preencha todos os campos');
         return;
@@ -207,7 +235,15 @@ export default function ContratarPage() {
         return;
       }
     }
+
     if (step === 2) {
+      if (!serviceId) {
+        toast.error('Por favor, selecione o serviço');
+        return;
+      }
+    }
+
+    if (step === 1) {
       if (!currentEloId || !targetEloId) {
         toast.error('Por favor, selecione o elo atual e o elo alvo');
         return;
@@ -251,101 +287,8 @@ export default function ContratarPage() {
 
           <form onSubmit={handleSubmit}>
             
-            {/* Step 1: Account Info */}
+            {/* Step 1: Elo Selection */}
             {step === 1 && (
-              <div className="bg-lol-card border border-white/10 rounded-xl p-8 max-w-xl mx-auto shadow-2xl animate-fadeIn">
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                  <i className="fa-regular fa-user text-lol-gold"></i>
-                  Criar Conta
-                </h2>
-                
-                <div className="space-y-5">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Nome Completo</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i className="fa-regular fa-user text-gray-500"></i>
-                      </div>
-                      <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                        placeholder="Seu nome completo"
-                        className="w-full pl-10 pr-4 py-3 bg-lol-input border border-gray-700 rounded text-white focus:outline-none focus:border-lol-gold focus:ring-1 focus:ring-lol-gold transition placeholder-gray-600"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">E-mail</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i className="fa-regular fa-envelope text-gray-500"></i>
-                      </div>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        placeholder="seu@email.com"
-                        className="w-full pl-10 pr-4 py-3 bg-lol-input border border-gray-700 rounded text-white focus:outline-none focus:border-lol-gold focus:ring-1 focus:ring-lol-gold transition placeholder-gray-600"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Senha</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i className="fa-solid fa-lock text-gray-500"></i>
-                      </div>
-                      <input
-                        type={visiblePassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        placeholder="••••••••"
-                        className="w-full pl-10 pr-10 py-3 bg-lol-input border border-gray-700 rounded text-white focus:outline-none focus:border-lol-gold focus:ring-1 focus:ring-lol-gold transition placeholder-gray-600"
-                      />
-                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-500 hover:text-white transition" onClick={togglePassword}>
-                        <i className={`fa-regular ${visiblePassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Confirmar Senha</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i className="fa-solid fa-lock text-gray-500"></i>
-                      </div>
-                      <input
-                        type={visiblePassword ? 'text' : 'password'}
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                        placeholder="••••••••"
-                        className="w-full pl-10 pr-4 py-3 bg-lol-input border border-gray-700 rounded text-white focus:outline-none focus:border-lol-gold focus:ring-1 focus:ring-lol-gold transition placeholder-gray-600"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-8 flex justify-end">
-                  <button 
-                    type="button" 
-                    onClick={nextStep}
-                    className="px-8 py-3 bg-gradient-to-r from-lol-gold to-yellow-600 text-black font-bold rounded hover:brightness-110 transition transform hover:scale-[1.02] shadow-[0_0_15px_rgba(200,170,110,0.3)]"
-                  >
-                    Próximo <i className="fa-solid fa-arrow-right ml-2"></i>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Step 2: Elo Selection */}
-            {step === 2 && (
               <div className="animate-fadeIn">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                   
@@ -381,6 +324,7 @@ export default function ContratarPage() {
                       ))}
                     </div>
 
+                    
                     {/* Current Elo Display */}
                     {currentElo && (
                       <div className="flex items-center gap-4 p-4 bg-black/30 rounded-lg border border-white/5">
@@ -535,8 +479,9 @@ export default function ContratarPage() {
               </div>
             )}
 
-            {/* Step 3: Service & Confirmation */}
-            {step === 3 && (
+
+            {/* Step 2: Service & Confirmation */}
+            {step === 2 && (
               <div className="animate-fadeIn">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                   
@@ -665,21 +610,14 @@ export default function ContratarPage() {
                     </div>
 
                     <button 
-                      type="submit"
-                      disabled={isSubmitting || !serviceId}
+                      type="button"
                       className="w-full py-4 bg-gradient-to-r from-lol-gold to-yellow-600 text-black font-bold rounded hover:brightness-110 transition transform hover:scale-[1.02] shadow-[0_0_15px_rgba(200,170,110,0.3)] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                      onClick={nextStep}
                     >
-                      {isSubmitting ? (
-                        <>
-                          <i className="fa-solid fa-spinner fa-spin mr-2"></i>
-                          Processando...
-                        </>
-                      ) : (
-                        <>
-                          <i className="fa-solid fa-check mr-2"></i>
-                          Finalizar Pedido
-                        </>
-                      )}
+                      <>
+                        <i className="fa-solid fa-check mr-2"></i>
+                        Realizar Pedido
+                      </>
                     </button>
 
                     <p className="text-xs text-gray-500 text-center mt-4">
@@ -699,6 +637,123 @@ export default function ContratarPage() {
                   </button>
                 </div>
               </div>
+            )}
+
+
+            {/* Step 3: Account Info */}
+            {step === 3 && (
+              <>
+                <div className="bg-lol-card border border-white/10 rounded-xl p-8 max-w-xl mx-auto shadow-2xl animate-fadeIn">
+                  <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                    <i className="fa-regular fa-user text-lol-gold"></i>
+                    Criar Conta
+                  </h2>
+                  
+                  <div className="space-y-5">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Nome Completo</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <i className="fa-regular fa-user text-gray-500"></i>
+                        </div>
+                        <input
+                          type="text"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          required
+                          placeholder="Seu nome completo"
+                          className="w-full pl-10 pr-4 py-3 bg-lol-input border border-gray-700 rounded text-white focus:outline-none focus:border-lol-gold focus:ring-1 focus:ring-lol-gold transition placeholder-gray-600"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">E-mail</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <i className="fa-regular fa-envelope text-gray-500"></i>
+                        </div>
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          placeholder="seu@email.com"
+                          className="w-full pl-10 pr-4 py-3 bg-lol-input border border-gray-700 rounded text-white focus:outline-none focus:border-lol-gold focus:ring-1 focus:ring-lol-gold transition placeholder-gray-600"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Senha</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <i className="fa-solid fa-lock text-gray-500"></i>
+                        </div>
+                        <input
+                          type={visiblePassword ? 'text' : 'password'}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          placeholder="••••••••"
+                          className="w-full pl-10 pr-10 py-3 bg-lol-input border border-gray-700 rounded text-white focus:outline-none focus:border-lol-gold focus:ring-1 focus:ring-lol-gold transition placeholder-gray-600"
+                        />
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-500 hover:text-white transition" onClick={togglePassword}>
+                          <i className={`fa-regular ${visiblePassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">Confirmar Senha</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <i className="fa-solid fa-lock text-gray-500"></i>
+                        </div>
+                        <input
+                          type={visiblePassword ? 'text' : 'password'}
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                          placeholder="••••••••"
+                          className="w-full pl-10 pr-4 py-3 bg-lol-input border border-gray-700 rounded text-white focus:outline-none focus:border-lol-gold focus:ring-1 focus:ring-lol-gold transition placeholder-gray-600"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 flex justify-end">
+                    <button 
+                      type="submit"
+                      disabled={isSubmitting || !serviceId}
+                      className="w-full py-4 bg-gradient-to-r from-lol-gold to-yellow-600 text-black font-bold rounded hover:brightness-110 transition transform hover:scale-[1.02] shadow-[0_0_15px_rgba(200,170,110,0.3)] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <i className="fa-solid fa-spinner fa-spin mr-2"></i>
+                          Processando...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fa-solid fa-check mr-2"></i>
+                          Realizar Pedido
+                        </>
+                      )}
+                    </button>
+
+                  </div>
+                </div>
+
+                <div className="mt-8 flex justify-start">
+                  <button 
+                    type="button"
+                    onClick={prevStep}
+                    className="px-8 py-3 bg-transparent border border-gray-600 text-white font-bold rounded hover:bg-white/10 transition"
+                  >
+                    <i className="fa-solid fa-arrow-left mr-2"></i> Voltar
+                  </button>
+                </div>
+              </>
             )}
 
           </form>

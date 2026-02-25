@@ -10,6 +10,7 @@ import { Job } from '../../entities/Job';
 import plainUnit from '../../utils/plainUnit';
 import decimalUnit from '../../utils/decimalUnit';
 import './style.css';
+import { jobbers } from '@/app/services/jobbers';
 
 export default function JobsPage() {
   const [jobsData, setJobsData] = useState<Job[]>([]);
@@ -25,8 +26,9 @@ export default function JobsPage() {
     let responseJobs: Job[] = [];
 
     if (userResponse.role !== 'admin') {
-      if (userResponse.role === 'jobber') {
-        responseJobs = await jobs.getAll({ jobberId: userResponse.id });
+      if (userResponse.role === 'jober') {
+        const responseJober = await jobbers.showByUserId(userResponse.id ?? '');
+        responseJobs = await jobs.getAll({ jobberId: responseJober.id });
       } else {
         responseJobs = await jobs.getAll({ userId: userResponse.id });
       }
