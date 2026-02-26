@@ -10,6 +10,7 @@ export interface Job {
   currentRank: number;
   rank: number;
   price: number;
+  status: string;
   createdAt: string;
   updatedAt: string;
   serviceId: string;
@@ -19,5 +20,5 @@ export interface Job {
   currentElo: Elo;
   targetElo: Elo;
   user: User;
-  jobber: Jobber;
+  jober: Jobber;
 }

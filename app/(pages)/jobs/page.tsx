@@ -66,6 +66,7 @@ export default function JobsPage() {
                   <th className="px-6 py-5 lg:table-cell">Serviço</th>
                   <th className="px-6 py-5">De</th>
                   <th className="px-6 py-5">Para</th>
+                  <th className="px-6 py-5">Status</th>
                   <th className="px-6 py-5 hidden lg:table-cell">Observação</th>
                   <th className="px-6 py-5 text-right">Ações</th>
                 </tr>
@@ -98,6 +99,34 @@ export default function JobsPage() {
                           <span className="text-[10px] bg-lol-blue/10 text-lol-blue px-2 py-0.5 rounded inline-block mt-1">Rank {job.rank}</span>
                         )}
                       </span>
+                    </td>
+
+                    <td className="px-6 py-4">
+                      {job.status === 'pending' && (
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">
+                          Pendente
+                        </span>
+                      )}
+                      {job.status === 'paid' && (
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-500 border border-green-500/20">
+                          Pagamento Aprovado
+                        </span>
+                      )}
+                      {job.status === 'in_progress' && (
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-500 border border-green-500/20">
+                          Em andamento
+                        </span>
+                      )}
+                      {job.status === 'completed' && (
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-500 border border-green-500/20">
+                          Completo
+                        </span>
+                      )}
+                      {job.status === 'cancelled' && (
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-500 border border-red-500/20">
+                          Cancelado
+                        </span>
+                      )}
                     </td>
 
                     <td className="px-6 py-4 hidden lg:table-cell">

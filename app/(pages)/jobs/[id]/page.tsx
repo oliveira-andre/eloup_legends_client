@@ -228,6 +228,7 @@ export default function ShowJobPage() {
                   >
                     <option value="">Selecione um status</option>
                     <option value="pending">Pendente</option>
+                    <option value="paid">Pagamento Aprovado</option>
                     <option value="in_progress">Em andamento</option>
                     <option value="completed">Completo</option>
                     <option value="cancelled">Cancelado</option>
