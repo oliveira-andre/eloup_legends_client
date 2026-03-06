@@ -30,18 +30,30 @@ export default function Dashboard() {
     const responseStats = await stats();
     setStatsData(responseStats ?? []);
 
-    console.log(responseStats);
+    // Clear arrays first to prevent duplication on navigation
+    setTopJobbersData([]);
+    setEloCountData([]);
 
-    Object.entries(responseStats.topJobers).forEach(async ([joberId, jobber]) => {
-      const responseJober = await jobbers.show(joberId ?? '');
-      setTopJobbersData(prev => [...prev, responseJober ?? {}]);
-    });
+    // Fetch top jobbers
+    const topJobberPromises = Object.entries(responseStats.topJobers || {}).map(
+      async ([joberId]) => {
+        const responseJober = await jobbers.show(joberId ?? '');
+        return responseJober;
+      }
+    );
+    const topJobbersResults = await Promise.all(topJobberPromises);
+    setTopJobbersData(topJobbersResults.filter(Boolean) as Jobber[]);
 
-    setTotalEloCount(Object.entries(responseStats.eloCount).length);
-    Object.entries(responseStats.eloCount).forEach(async ([eloId, jobber]) => {
-      const responseElo = await elos.show(eloId ?? '');
-      setEloCountData(prev => [...prev, responseElo ?? {}]);
-    });
+    // Fetch elo count data
+    setTotalEloCount(Object.entries(responseStats.eloCount || {}).length);
+    const eloPromises = Object.entries(responseStats.eloCount || {}).map(
+      async ([eloId]) => {
+        const responseElo = await elos.show(eloId ?? '');
+        return responseElo;
+      }
+    );
+    const eloResults = await Promise.all(eloPromises);
+    setEloCountData(eloResults.filter(Boolean) as Elo[]);
   }
 
   async function fetchJobbers() {
@@ -237,7 +249,7 @@ export default function Dashboard() {
                           <span className="text-white">{Math.round((statsData?.eloCount[elo.id] / totalEloCount) * 100)}%</span>
                         </div>
                         <div className="w-full bg-gray-800 rounded-full h-2">
-                          <div className="bg-gray-500 h-2 rounded-full" style={{ width: `${Math.round((statsData?.eloCount[elo.id] / totalEloCount) * 100)}%` }}></div>
+                          <div className="bg-gray-500 h-2 rounded-full" style={{ width: `${Math.round((statsData?.eloCount[elo.id] / totalEloCount) * 100)}%`, maxWidth: '100%' }}></div>
                         </div>
                       </div>
                     ))

@@ -28,6 +28,7 @@ export default function PublicReviewsPage() {
 
   async function fetchReviews() {
     const responseReviews = await reviews.getAll();
+    console.log(responseReviews);
     setReviewsData(responseReviews ?? []);
     setFilteredReviews(responseReviews ?? []);
   }
@@ -177,7 +178,7 @@ export default function PublicReviewsPage() {
                             <img 
                               src={`${process.env.NEXT_PUBLIC_API_URL}/${review.job.currentElo.picture}`} 
                               alt={review.job.currentElo.name}
-                              className="w-8 h-8 object-contain"
+                              className="w-24 h-24 object-contain"
                             />
                           )}
                           <i className="fa-solid fa-arrow-right text-gray-600 text-xs"></i>
@@ -185,10 +186,11 @@ export default function PublicReviewsPage() {
                             <img 
                               src={`${process.env.NEXT_PUBLIC_API_URL}/${review.job.targetElo.picture}`} 
                               alt={review.job.targetElo.name}
-                              className="w-8 h-8 object-contain"
+                              className="w-24 h-24 object-contain"
                             />
                           )}
                         </div>
+                        <br />
                         <span className="text-xs text-gray-400">{review.job.service?.name}</span>
                       </div>
                     )}

@@ -202,7 +202,7 @@ export default function AdminReviewsPage() {
                               <img 
                                 src={`${process.env.NEXT_PUBLIC_API_URL}/${review.job.currentElo.picture}`} 
                                 alt={review.job.currentElo.name}
-                                className="w-6 h-6 object-contain"
+                                className="w-24 h-24 object-contain"
                               />
                             )}
                             <i className="fa-solid fa-arrow-right text-gray-600 text-xs"></i>
@@ -210,7 +210,7 @@ export default function AdminReviewsPage() {
                               <img 
                                 src={`${process.env.NEXT_PUBLIC_API_URL}/${review.job.targetElo.picture}`} 
                                 alt={review.job.targetElo.name}
-                                className="w-6 h-6 object-contain"
+                                className="w-24 h-24 object-contain"
                               />
                             )}
                           </div>

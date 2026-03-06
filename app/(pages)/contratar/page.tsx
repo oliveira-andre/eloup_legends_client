@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -12,6 +12,7 @@ import { elos } from '../../services/elos';
 import { services } from '../../services/services';
 import { auth } from '../../services/auth';
 import { jobs } from '../../services/jobs';
+import { payments } from '../../services/payments';
 import { Elo } from '@/app/entities/Elo';
 import { Service } from '@/app/entities/Service';
 import plainUnit from '@/app/utils/plainUnit';
@@ -45,6 +46,15 @@ export default function ContratarPage() {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
+  
+  // PIX payment state
+  const [pixQrCode, setPixQrCode] = useState<string>('');
+  const [pixCopyPaste, setPixCopyPaste] = useState<string>('');
+  const [jobId, setJobId] = useState<string>('');
+  const [paymentStatus, setPaymentStatus] = useState<string>('pending');
+  const [timeRemaining, setTimeRemaining] = useState<number>(30 * 60); // 30 minutes in seconds
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     fetchElos();
@@ -112,6 +122,10 @@ export default function ContratarPage() {
       }
     } else {
       // Different elos - iterate through each elo in the path
+      // When crossing elos, we need to count the promotion step as well
+      // Example: Iron I to Bronze IV = 1 step (the promotion itself)
+      // Example: Iron IV to Bronze IV = 4 steps (IV->III->II->I + promotion)
+      
       for (let i = 0; i < elosInPath.length; i++) {
         const elo = elosInPath[i];
         const eloPrice = elo.prices?.[serviceId] || service.price;
@@ -121,25 +135,28 @@ export default function ContratarPage() {
         let ranksInThisElo = 0;
 
         if (isFirstElo) {
-          // Current elo: count ranks from currentRank to I (rank 1)
+          // Current elo: count ranks from currentRank to promotion (includes the promotion step)
           if (elo.has_rank) {
-            // From currentRank down to 1 (e.g., from IV=4 to I=1 is 3 steps)
-            ranksInThisElo = currentRankNum - 1;
+            // From currentRank to next elo = currentRankNum steps
+            // E.g., from IV=4: IV->III->II->I->nextElo = 4 steps
+            // E.g., from I=1: I->nextElo = 1 step
+            ranksInThisElo = currentRankNum;
           } else {
             // Unranked elos (Master, GM, Challenger) count as 1 unit
             ranksInThisElo = 1;
           }
         } else if (isLastElo) {
           // Target elo: count ranks from IV (rank 4) to targetRank
+          // We already entered this elo, so just count internal ranks
           if (elo.has_rank) {
-            // From IV=4 down to targetRank (e.g., to I=1 is 3 steps, to II=2 is 2 steps)
+            // From IV=4 down to targetRank (e.g., to IV=4 is 0 steps, to I=1 is 3 steps)
             ranksInThisElo = 4 - targetRankNum;
           } else {
-            // Unranked elos count as 1 unit
-            ranksInThisElo = 1;
+            // Unranked elos count as 1 unit (we already counted entering)
+            ranksInThisElo = 0;
           }
         } else {
-          // Intermediate elo: count all 4 ranks (IV -> III -> II -> I)
+          // Intermediate elo: count all 4 ranks (entering + IV -> III -> II -> I)
           if (elo.has_rank) {
             ranksInThisElo = 4;
           } else {
@@ -188,7 +205,7 @@ export default function ContratarPage() {
       }
 
       // Then, create the job with the new user ID
-      await jobs.create({
+      const jobResponse = await jobs.create({
         name,
         observation,
         currentRank: Number(currentRank) || 0,
@@ -200,27 +217,112 @@ export default function ContratarPage() {
         userId,
       });
 
-      toast.success('Pedido criado com sucesso! Entraremos em contato em breve.');
+      const createdJobId = jobResponse.id;
+      setJobId(createdJobId);
+
+      // Create PIX payment
+      const pixResponse = await payments.createPix({
+        external_reference: createdJobId,
+        email: email,
+      });
+
+      setPixQrCode(pixResponse.data.pix.qr_code_base64);
+      setPixCopyPaste(pixResponse.data.pix.qr_code);
       
-      // Reset form
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-      setName('');
-      setObservation('');
-      setCurrentEloId('');
-      setTargetEloId('');
-      setCurrentRank('');
-      setTargetRank('');
-      setServiceId('');
-      setPrice(0);
-      setStep(1);
+      // Move to PIX payment step
+      setStep(4);
+      
+      // Start payment status polling
+      startPaymentPolling(createdJobId);
+      
+      // Start countdown timer
+      startCountdownTimer();
 
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Erro ao criar pedido. Tente novamente.';
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  function startPaymentPolling(jobIdToCheck: string) {
+    // Clear any existing interval
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+    }
+
+    // Poll every 5 seconds
+    pollingIntervalRef.current = setInterval(async () => {
+      try {
+        const statusResponse = await payments.getStatus(jobIdToCheck);
+        setPaymentStatus(statusResponse.status);
+
+        if (statusResponse.status === 'approved') {
+          // Payment approved - move to success step
+          stopPolling();
+          setStep(5);
+        } else if (statusResponse.status === 'rejected' || statusResponse.status === 'cancelled') {
+          // Payment failed
+          stopPolling();
+          toast.error('Pagamento não aprovado. Tente novamente.');
+        }
+      } catch (error) {
+        console.error('Error checking payment status:', error);
+      }
+    }, 5000);
+  }
+
+  function startCountdownTimer() {
+    // Clear any existing timer
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+    }
+
+    setTimeRemaining(30 * 60); // Reset to 30 minutes
+
+    timerIntervalRef.current = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          stopPolling();
+          toast.error('Tempo para pagamento expirado.');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }
+
+  function stopPolling() {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+  }
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopPolling();
+    };
+  }, []);
+
+  function formatTime(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  async function copyPixCode() {
+    try {
+      await navigator.clipboard.writeText(pixCopyPaste);
+      toast.success('Código PIX copiado!');
+    } catch (error) {
+      toast.error('Erro ao copiar código');
     }
   }
 
@@ -275,15 +377,19 @@ export default function ContratarPage() {
           </div>
 
           {/* Progress Steps */}
-          <div className="flex justify-center mb-12">
-            <div className="flex items-center gap-4">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 1 ? 'bg-lol-gold text-black' : 'bg-gray-700 text-gray-400'}`}>1</div>
-              <div className={`w-16 h-1 ${step >= 2 ? 'bg-lol-gold' : 'bg-gray-700'}`}></div>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 2 ? 'bg-lol-gold text-black' : 'bg-gray-700 text-gray-400'}`}>2</div>
-              <div className={`w-16 h-1 ${step >= 3 ? 'bg-lol-gold' : 'bg-gray-700'}`}></div>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step >= 3 ? 'bg-lol-gold text-black' : 'bg-gray-700 text-gray-400'}`}>3</div>
+          {step < 5 && (
+            <div className="flex justify-center mb-12">
+              <div className="flex items-center gap-2 md:gap-4">
+                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-sm ${step >= 1 ? 'bg-lol-gold text-black' : 'bg-gray-700 text-gray-400'}`}>1</div>
+                <div className={`w-8 md:w-16 h-1 ${step >= 2 ? 'bg-lol-gold' : 'bg-gray-700'}`}></div>
+                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-sm ${step >= 2 ? 'bg-lol-gold text-black' : 'bg-gray-700 text-gray-400'}`}>2</div>
+                <div className={`w-8 md:w-16 h-1 ${step >= 3 ? 'bg-lol-gold' : 'bg-gray-700'}`}></div>
+                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-sm ${step >= 3 ? 'bg-lol-gold text-black' : 'bg-gray-700 text-gray-400'}`}>3</div>
+                <div className={`w-8 md:w-16 h-1 ${step >= 4 ? 'bg-lol-gold' : 'bg-gray-700'}`}></div>
+                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-sm ${step >= 4 ? 'bg-lol-gold text-black' : 'bg-gray-700 text-gray-400'}`}>4</div>
+              </div>
             </div>
-          </div>
+          )}
 
           <form onSubmit={handleSubmit}>
             
@@ -754,6 +860,164 @@ export default function ContratarPage() {
                   </button>
                 </div>
               </>
+            )}
+
+            {/* Step 4: PIX Payment */}
+            {step === 4 && (
+              <div className="animate-fadeIn max-w-xl mx-auto">
+                <div className="bg-lol-card border border-white/10 rounded-xl p-8 shadow-2xl text-center">
+                  
+                  {/* Timer */}
+                  <div className="mb-6">
+                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${timeRemaining < 300 ? 'bg-red-500/20 text-red-400' : 'bg-lol-gold/20 text-lol-gold'}`}>
+                      <i className="fa-solid fa-clock"></i>
+                      <span className="font-mono font-bold">{formatTime(timeRemaining)}</span>
+                    </div>
+                    <p className="text-gray-500 text-xs mt-2">Tempo restante para pagamento</p>
+                  </div>
+
+                  <h2 className="text-2xl font-bold text-white mb-2">
+                    <i className="fa-brands fa-pix text-lol-blue mr-2"></i>
+                    Pagamento via PIX
+                  </h2>
+                  <p className="text-gray-400 mb-6">Escaneie o QR Code ou copie o código PIX para realizar o pagamento.</p>
+
+                  {/* Price */}
+                  <div className="bg-black/30 rounded-lg p-4 mb-6 inline-block">
+                    <span className="text-gray-400 text-sm">Valor a pagar:</span>
+                    <div className="text-3xl font-black text-lol-gold">
+                      R$ {plainUnit(price || 0)},{decimalUnit(price || 0)}
+                    </div>
+                  </div>
+
+                  {/* QR Code */}
+                  <div className="mb-6">
+                    <div className="bg-white p-4 rounded-xl inline-block">
+                      {pixQrCode && (
+                        <img 
+                          src={pixQrCode.startsWith('data:') ? pixQrCode : `data:image/png;base64,${pixQrCode}`}
+                          alt="QR Code PIX"
+                          className="w-48 h-48 object-contain"
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Copy PIX Code */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-400 mb-2">Código PIX (Copia e Cola)</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={pixCopyPaste}
+                        readOnly
+                        className="flex-1 px-4 py-3 bg-lol-input border border-gray-700 rounded text-white text-sm font-mono truncate"
+                      />
+                      <button
+                        type="button"
+                        onClick={copyPixCode}
+                        className="px-6 py-3 bg-lol-blue text-black font-bold rounded hover:brightness-110 transition"
+                      >
+                        <i className="fa-solid fa-copy mr-2"></i>
+                        Copiar
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Status */}
+                  <div className="flex items-center justify-center gap-2 text-gray-400">
+                    {paymentStatus === 'pending' && (
+                      <>
+                        <i className="fa-solid fa-spinner fa-spin"></i>
+                        <span>Aguardando pagamento...</span>
+                      </>
+                    )}
+                    {paymentStatus === 'approved' && (
+                      <>
+                        <i className="fa-solid fa-check-circle text-green-500"></i>
+                        <span className="text-green-500">Pagamento aprovado!</span>
+                      </>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-gray-600 mt-6">
+                    <i className="fa-solid fa-shield-halved mr-1"></i>
+                    Pagamento processado com segurança pelo Mercado Pago
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Step 5: Success */}
+            {step === 5 && (
+              <div className="animate-fadeIn max-w-xl mx-auto text-center">
+                <div className="bg-lol-card border border-white/10 rounded-xl p-8 shadow-2xl">
+                  
+                  {/* Success Icon */}
+                  <div className="mb-6">
+                    <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
+                      <i className="fa-solid fa-check text-5xl text-green-500"></i>
+                    </div>
+                  </div>
+
+                  <h2 className="text-3xl font-bold text-white mb-4">Tudo certo!</h2>
+                  
+                  <p className="text-gray-400 text-lg mb-2">
+                    A equipe EloUp Legends vai entrar em contato com você.
+                  </p>
+                  
+                  <p className="text-gray-500 mb-8">
+                    Você pode logar para acompanhar seu pedido.
+                  </p>
+
+                  {/* Order Summary */}
+                  <div className="bg-black/30 rounded-lg p-4 mb-8 text-left">
+                    <h3 className="text-sm font-bold text-lol-gold mb-3">Resumo do Pedido</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Pedido:</span>
+                        <span className="text-white font-mono text-xs">{jobId}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Valor pago:</span>
+                        <span className="text-lol-gold font-bold">R$ {plainUnit(price || 0)},{decimalUnit(price || 0)}</span>
+                      </div>
+                      {currentElo && targetElo && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-400">Serviço:</span>
+                          <div className="flex items-center gap-2">
+                            <img 
+                              src={`${process.env.NEXT_PUBLIC_API_URL}/${currentElo.picture}`} 
+                              alt={currentElo.name}
+                              className="w-6 h-6 object-contain"
+                            />
+                            <i className="fa-solid fa-arrow-right text-gray-600 text-xs"></i>
+                            <img 
+                              src={`${process.env.NEXT_PUBLIC_API_URL}/${targetElo.picture}`} 
+                              alt={targetElo.name}
+                              className="w-6 h-6 object-contain"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Login Button */}
+                  <Link
+                    href="/login"
+                    className="inline-block w-full py-4 bg-gradient-to-r from-lol-gold to-yellow-600 text-black font-bold rounded hover:brightness-110 transition transform hover:scale-[1.02] shadow-[0_0_15px_rgba(200,170,110,0.3)]"
+                  >
+                    <i className="fa-solid fa-right-to-bracket mr-2"></i>
+                    Login
+                  </Link>
+
+                  <p className="text-xs text-gray-600 mt-6">
+                    <i className="fa-solid fa-envelope mr-1"></i>
+                    Um e-mail de confirmação foi enviado para {email}
+                  </p>
+                </div>
+              </div>
             )}
 
           </form>
